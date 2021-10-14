@@ -7,23 +7,47 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
 
 - name: Add Apt signing key
   become: true
   ansible.builtin.apt_key:
     url: "https://dl.google.com/linux/linux_signing_key.pub"
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add Yum signing key
+  rpm_key:
+    key: https://dl.google.com/linux/linux_signing_key.pub
+    state: present
+  when: ansible_os_family == 'RedHat'
 
 - name: Add repository into sources list
   become: true
   ansible.builtin.apt_repository:
     repo: deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add repository into sources list
+  become: true
+  shell: 'echo -e "[google-chrome]\nname=google-chrome\nbaseurl=http://dl.google.com/linux/chrome/rpm/stable/x86_64\nenabled=1\ngpgcheck=1\ngpgkey=https://dl.google.com/linux/linux_signing_key.pub" > /etc/yum.repos.d/google-chrome.repo'
+  args:
+    creates: /etc/yum.repos.d/google-chrome.repo
+  when: ansible_os_family == 'RedHat'
 
 - name: Install google-chrome-stable
   become: true
   apt:
-    pkg: "google-chrome-stable"
+    name: "google-chrome-stable"
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
+
+- name: Install google-chrome-stable
+  yum:
+    name: "google-chrome-stable"
+    state: latest 
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'

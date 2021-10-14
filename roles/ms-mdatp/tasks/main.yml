@@ -35,6 +35,14 @@
     name: mdatp
     state: latest
     update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install MDATP
+  yum:
+    name: "mdatp"
+    state: latest 
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
 
 - name: Create MDATP directories
   file:

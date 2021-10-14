@@ -7,18 +7,34 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
 
 - name: Add Apt signing key
   become: true
   ansible.builtin.apt_key:
     url: "https://packages.microsoft.com/keys/microsoft.asc"
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add Yum signing key
+  rpm_key:
+    key: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  when: ansible_os_family == 'RedHat'
 
 - name: Add repository into sources list
   become: true
   ansible.builtin.apt_repository:
     repo: deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add repository into sources list
+  become: true
+  shell: 'echo -e "[teams]\nname=teams\nbaseurl=https://packages.microsoft.com/yumrepos/ms-teams\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/ms-teams.repo'
+  args:
+    creates: /etc/yum.repos.d/ms-teams.repo
+  when: ansible_os_family == 'RedHat'
 
 - name: Install ms-teams
   become: true
@@ -27,3 +43,12 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
+
+- name: Install vscode
+  yum:
+    name: "teams"
+    state: latest 
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
+  

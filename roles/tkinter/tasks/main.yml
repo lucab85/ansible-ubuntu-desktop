@@ -7,3 +7,11 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
+
+- name: Install Tkinter
+  yum:
+    name: "tkinter"
+    state: latest 
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'

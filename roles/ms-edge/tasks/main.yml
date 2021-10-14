@@ -7,18 +7,34 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
 
 - name: Add Apt signing key
   become: true
   ansible.builtin.apt_key:
     url: "https://packages.microsoft.com/keys/microsoft.asc"
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add Yum signing key
+  rpm_key:
+    key: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  when: ansible_os_family == 'RedHat'
 
 - name: Add repository into sources list
   become: true
   ansible.builtin.apt_repository:
     repo: deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add repository into sources list
+  become: true
+  shell: 'dnf config-manager --add-repo https://packages.microsoft.com/yumrepos/edge'
+  args:
+    creates: /etc/yum.repos.d/ms-edge.repos
+  when: ansible_os_family == 'RedHat'
 
 - name: Install microsoft-edge-beta
   become: true
@@ -27,3 +43,11 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
+
+- name: Install microsoft-edge-dev
+  yum:
+    name: "microsoft-edge-dev"
+    state: latest 
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'

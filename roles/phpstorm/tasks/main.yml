@@ -7,7 +7,16 @@
     state: latest
     update_cache: true
     cache_valid_time: "{{ aptcachetime }}"
+  when: ansible_os_family == 'Debian'
 
 - name: Install PhpStorm
   become: true
   shell: "umake ide phpstorm"
+  when: ansible_os_family == 'Debian'
+
+- name: Install PhpStorm
+  become: true
+  snap:
+    name: phpstorm
+    classic: true
+  when: ansible_os_family == 'RedHat'
